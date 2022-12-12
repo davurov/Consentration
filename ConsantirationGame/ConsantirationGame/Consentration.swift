@@ -9,11 +9,34 @@ import Foundation
 
 class Consentration {
     
-    var cards = [Card]()
-    var numOfonlyFaceUp: Int?
+    private(set) var cards = [Card]()
+    
+    private var numOfonlyFaceUp: Int? {
+        get {
+            var foundIndex: Int?
+            for index in cards.indices {
+                if cards[index].isFaceUp {
+                    if foundIndex == nil {
+                        foundIndex = index
+                    } else {
+                        return nil
+                    }
+                }
+            }
+            return foundIndex
+        }
+        set {
+            for index in cards.indices {
+                cards[index].isFaceUp = (index == newValue)
+            }
+        }
+    }
+    
+    
     var isFinished = false
     
     func chooseCard(at index: Int) {
+        assert(cards.indices.contains(index), "max index is \(cards.indices.count) you entered \(index)")
         if !cards[index].isMatched {
             if let matchIndex = numOfonlyFaceUp, matchIndex != index {
                 if cards[matchIndex].identifier == cards[index].identifier {
@@ -21,33 +44,28 @@ class Consentration {
                     cards[index].isMatched = true
                 }
                 cards[index].isFaceUp = true
-                numOfonlyFaceUp = nil
             } else {
-                for flipDownIndex in cards.indices {
-                    cards[flipDownIndex].isFaceUp = false
-                }
-                cards[index].isFaceUp = true
                 numOfonlyFaceUp = index
             }
         }
     }
-    
-    func replay() {
-        if isFinished {
-            for index in cards.indices {
-                cards[index].isMatched = false
-                cards[index].isFaceUp = false
+        
+        func replay() {
+            if isFinished {
+                for index in cards.indices {
+                    cards[index].isMatched = false
+                    cards[index].isFaceUp = false
+                }
+                cards.shuffle()
+            }
+            isFinished = false
+        }
+        
+        init(numberOfCards: Int) {
+            for _ in 1...numberOfCards {
+                let card = Card()
+                cards += [card, card]
             }
             cards.shuffle()
         }
-        isFinished = false
     }
-    
-    init(numberOfCards: Int) {
-        for _ in 1...numberOfCards {
-            let card = Card()
-            cards += [card, card]
-        }
-        cards.shuffle()
-    }
-}
